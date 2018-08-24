@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  r-studio:
+    build: .
+    ports:
+      - "8787:8787"
+    environment:
+      - PASSWORD=rocker
+      - ROOT=TRUE
+    volumes:
+      - /Users/laura.uzcategui/Documents/projects/exploratory_data_analysis:/data
