@@ -1,0 +1,12 @@
+version: '3'
+
+services:
+  r-studio:
+    build: .
+    ports:
+      - "8787:8787"
+    environment:
+      - PASSWORD=${PASS}
+      - ROOT=TRUE
+    volumes:
+      - ${LOCAL_VOL}:/data
