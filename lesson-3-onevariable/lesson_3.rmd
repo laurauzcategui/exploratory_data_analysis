@@ -1,0 +1,72 @@
+## Reading
+
+```{r}
+# getwd()
+# list.files()
+pf <- read.csv("../datasets/pseudo_facebook.tsv", sep="\t")
+names(pf)
+
+library(ggplot2)
+qplot(x = dob_day, data=pf) + 
+  scale_x_continuous(breaks=1:31) + 
+  facet_wrap(~dob_month, ncol = 3)
+```
+
+# friend count 
+```{r}
+qplot(x = friend_count, data=pf, xlim=c(0,1000))
+
+# yet another way to limit data
+qplot(x = friend_count, data=pf) + 
+  scale_x_continuous(limits=c(0,1000))
+```
+# Adjusting the bin width 
+```{r}
+qplot(x = friend_count, data=pf, binwidth=25) + 
+  scale_x_continuous(limits=c(0,1000), breaks=seq(0,1000,50)) +
+  facet_wrap(~gender)
+```
+
+# Omitting NA observations by applying subset 
+```{r}
+qplot(x = friend_count, data=subset(pf,!is.na(gender)), binwidth=25) + 
+  scale_x_continuous(limits=c(0,1000), breaks=seq(0,1000,50)) +
+  facet_wrap(~gender)
+```
+
+# Stats of friends count 
+```{r}
+table(pf$gender)
+by(pf$friend_count,pf$gender, summary)
+````
+
+# Tenure 
+```{r}
+qplot(x=tenure, data=pf, binwidth=30, 
+  color = I('black'), fill =I('#099DD9'))
+```
+
+# Tenure by year
+```{r}
+qplot(x=tenure/365, data=pf, binwidth=.25, 
+      color = I('black'), fill =I('#F79420')) + 
+      scale_x_continuous(breaks = seq(1,7,1), limits=c(0,7))
+```
+
+# Labeling plots
+```{r}
+qplot(x=tenure/365, data=pf, binwidth=.25, 
+      xlab = "Numbers of years using fb",
+      ylab = "Numbers of users in Sample",
+      color = I('black'), fill =I('#F79420')) + 
+  scale_x_continuous(breaks = seq(1,7,1), limits=c(0,7))
+```
+
+# User Ages 
+```{r}
+qplot(x=age, data=pf, binwidth=1,
+      xlab = "Age", 
+      ylab = "Users in Sample", 
+      color = I('#5600b3'),fill =I('#e5ccff')) + 
+  scale_x_continuous(breaks = seq(12,113,5), limits=c(0,113))
+```
