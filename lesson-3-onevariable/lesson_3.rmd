@@ -70,3 +70,8 @@ qplot(x=age, data=pf, binwidth=1,
       color = I('#5600b3'),fill =I('#e5ccff')) + 
   scale_x_continuous(breaks = seq(12,113,5), limits=c(0,113))
 ```
+
+# Transforming Data 
+```{r}
+
+```
