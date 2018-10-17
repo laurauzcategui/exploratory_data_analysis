@@ -1,5 +1,7 @@
 FROM rocker/rstudio:latest
 
+RUN R -e "options(repos='http://cran.rstudio.com/')"
+
 # Install swirl
 RUN R -e "install.packages('swirl', repos = 'http://cran.us.r-project.org')"
 
