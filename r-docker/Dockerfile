@@ -13,3 +13,6 @@ RUN R -e "install.packages('RColorBrewer', repos = 'http://cran.us.r-project.org
 
 # Install gridExtra package
 RUN R -e "install.packages('gridExtra', repos = 'http://cran.us.r-project.org')"
+
+# Install dyplr package
+RUN R -e "install.packages('dplyr', repos = 'http://cran.us.r-project.org')"
