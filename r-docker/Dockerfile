@@ -1,5 +1,7 @@
 FROM rocker/rstudio:latest
 
+RUN apt-get update;apt-get install libz-dev;
+
 RUN R -e "options(repos='http://cran.rstudio.com/')"
 
 # Install swirl
@@ -16,3 +18,6 @@ RUN R -e "install.packages('gridExtra', repos = 'http://cran.us.r-project.org')"
 
 # Install dyplr package
 RUN R -e "install.packages('dplyr', repos = 'http://cran.us.r-project.org')"
+
+# Install alr3 
+RUN R -e "install.packages('alr3', repos = 'http://cran.us.r-project.org', dependencies=TRUE)"
