@@ -1,0 +1,251 @@
+Exploratory Data Analysis by Laura Uzcategui
+========================================================
+
+```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
+# Load all of the packages that you end up using in your analysis in this code
+# chunk.
+
+# Notice that the parameter "echo" was set to FALSE for this code chunk. This
+# prevents the code from displaying in the knitted HTML output. You should set
+# echo=FALSE for all code chunks in your file, unless it makes sense for your
+# report to show the code that generated a particular plot.
+
+# The other parameters for "message" and "warning" should also be set to FALSE
+# for other code chunks once you have verified that each plot comes out as you
+# want it to. This will clean up the flow of your report.
+
+library(ggplot2)
+library(dplyr)
+library(GGally)
+```
+
+```{r echo=FALSE, Load_the_Data}
+# Load the Data
+wine <- read.csv('wineQualityWhites.csv')
+```
+
+# Summary 
+  The following project for exploratory data analysis is based on a White Wine 
+  quality data provided on the Research paper 
+  [Modeling Wine Preferences from 
+  Physicochemical Properties using Fuzzy Techniques](http://www.scitepress.org/Papers/2015/55519/55519.pdf)
+  on which the purpose was to predict the human test preference based on 
+  physico chemical properties of wine. 
+  
+  The data was obtained from a variety of wines with origin in Portugal, 
+  specifically "Vinho Verde".
+
+# Univariate Plots Section
+
+Lets explore how the data looks by using the head function, which will show us the first rows. 
+
+```{r echo=FALSE, Univariate_Plots}
+head(wine)
+```
+**Initial Observation**
+ - Clearly we can see how all of our data is numeric. 
+
+Lets explore the dimensions of the dataset, which will give us an idea on how 
+big is the dataset. 
+
+```{r echo=FALSE, Univariate_Plot1}
+dim(wine)
+```
+
+Now, lets dig a bit deeper and see the structure of the dataset by using str method
+
+```{r echo=FALSE}
+str(wine)
+```
+
+**Initial Observation**
+ - Data is nott only numerical but integer too.
+
+Last but not least, let's take a look to the Summary of the dataset
+```{r echo=FALSE}
+summary(wine)
+```
+
+**Initial Observation**: initially our data looks good, but I would 
+be interested to explore why free and total sulfur dioxide have such a big 
+amounts on relation to other variables
+
+Now lets explore with some charts, starting with Alcohol levels
+
+```{r echo=FALSE}
+ggplot(aes(x=alcohol), data=wine, ) +
+  geom_histogram(color = 'black', fill='#d6e8d5', binwidth = 0.5)
+```
+
+**Initial Observation**
+ - It seems there is few relevant data points and binwidths we might 
+ want to check a  bit further for that let's summarise alcohol variable 
+ 
+```{r echo=FALSE}
+summary(wine$alcohol)
+```
+
+Let's set some limits to the data that we are observing 
+```{r echo=FALSE}
+ggplot(aes(x=alcohol), data=subset(wine, !is.na(alcohol))) +
+  geom_histogram(color = 'black', fill='#d6e8d5', bins = 30, binwidth = 0.1) + 
+  coord_cartesian(xlim=c(8.00,14.20),ylim=c(0,250)) 
+```
+
+**Initial Observation**
+- Now the data seems to be more uniform and even show a pattern
+
+Let's keep exploring other variables, such as volatic acidity 
+which is the amount of acetic acide and might influence taste
+```{r echo=FALSE}
+ggplot(aes(x=volatile.acidity), data=wine ) +
+  geom_histogram(color = 'black', fill='#ffecc9', binwidth = 0.05)
+```
+
+Same as before, checking the summary will give a better idea on limits 
+for the x axis
+```{r echo=FALSE}
+summary(wine$volatile.acidity)
+```
+```{r echo=FALSE}
+ggplot(aes(x=volatile.acidity), data=wine ) +
+  geom_histogram(color = 'black', fill='#ffecc9', binwidth = 0.03) +
+  coord_cartesian(xlim=c(0.0800,1.1000),ylim=c(0,800)) 
+```
+
+
+> **Tip**: Make sure that you leave a blank line between the start / end of
+each code block and the end / start of your Markdown text so that it is
+formatted nicely in the knitted text. Note as well that text on consecutive
+lines is treated as a single space. Make sure you have a blank line between
+your paragraphs so that they too are formatted for easy readability.
+
+# Univariate Analysis
+
+> **Tip**: Now that you've completed your univariate explorations, it's time to
+reflect on and summarize what you've found. Use the questions below to help you
+gather your observations and add your own if you have other thoughts!
+
+### What is the structure of your dataset?
+The structure of the dataset is  composed of4898 observations (rows) and 13
+variables (columns)
+
+### What is/are the main feature(s) of interest in your dataset?
+The main features of interest in my dataset are: 
+- Alcohol 
+- Volatic Acidity 
+- Residual sugar
+- Total sulfur dioxide
+
+### What other features in the dataset do you think will help support your \
+investigation into your feature(s) of interest?
+- Sulfates which might contribute to total sulfur dioxide levels
+
+### Did you create any new variables from existing variables in the dataset?
+- No. I have not created any new variables initially.
+
+### Of the features you investigated, were there any unusual distributions? \
+Did you perform any operations on the data to tidy, adjust, or change the form \
+of the data? If so, why did you do this?
+- I did apply some adjustments of the bins and binwidht on the data, specifically
+for the alcohol and volatic.acidity of the wine, since I wanted to check how the 
+data was spread out in the distribution.
+
+
+# Bivariate Plots Section
+
+> **Tip**: Based on what you saw in the univariate plots, what relationships
+between variables might be interesting to look at in this section? Don't limit
+yourself to relationships between a main output feature and one of the
+supporting variables. Try to look at relationships between supporting variables
+as well.
+
+```{r echo=FALSE, Bivariate_Plots}
+
+```
+
+# Bivariate Analysis
+
+> **Tip**: As before, summarize what you found in your bivariate explorations
+here. Use the questions below to guide your discussion.
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. How did the feature(s) of interest vary with other features in \
+the dataset?
+
+### Did you observe any interesting relationships between the other features \
+(not the main feature(s) of interest)?
+
+### What was the strongest relationship you found?
+
+
+# Multivariate Plots Section
+
+> **Tip**: Now it's time to put everything together. Based on what you found in
+the bivariate plots section, create a few multivariate plots to investigate
+more complex interactions between variables. Make sure that the plots that you
+create here are justified by the plots you explored in the previous section. If
+you plan on creating any mathematical models, this is the section where you
+will do that.
+
+```{r echo=FALSE, Multivariate_Plots}
+
+```
+
+# Multivariate Analysis
+
+### Talk about some of the relationships you observed in this part of the \
+investigation. Were there features that strengthened each other in terms of \
+looking at your feature(s) of interest?
+
+### Were there any interesting or surprising interactions between features?
+
+### OPTIONAL: Did you create any models with your dataset? Discuss the \
+strengths and limitations of your model.
+
+------
+
+# Final Plots and Summary
+
+> **Tip**: You've done a lot of exploration and have built up an understanding
+of the structure of and relationships between the variables in your dataset.
+Here, you will select three plots from all of your previous exploration to
+present here as a summary of some of your most interesting findings. Make sure
+that you have refined your selected plots for good titling, axis labels (with
+units), and good aesthetic choices (e.g. color, transparency). After each plot,
+make sure you justify why you chose each plot by describing what it shows.
+
+### Plot One
+```{r echo=FALSE, Plot_One}
+
+```
+
+### Description One
+
+
+### Plot Two
+```{r echo=FALSE, Plot_Two}
+
+```
+
+### Description Two
+
+
+### Plot Three
+```{r echo=FALSE, Plot_Three}
+
+```
+
+### Description Three
+
+------
+
+# Reflection
+
+> **Tip**: Here's the final step! Reflect on the exploration you performed and
+the insights you found. What were some of the struggles that you went through?
+What went well? What was surprising? Make sure you include an insight into
+future work that could be done with the dataset.
+
+> **Tip**: Don't forget to remove this, and the other **Tip** sections before
+saving your final work and knitting the final report!
