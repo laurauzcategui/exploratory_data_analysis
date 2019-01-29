@@ -1,6 +1,10 @@
 Exploratory Data Analysis by Laura Uzcategui
 ========================================================
 
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(echo=FALSE, warning=FALSE, message=FALSE)
+```
+
 ```{r echo=FALSE, message=FALSE, warning=FALSE, packages}
 # Load all of the packages that you end up using in your analysis in this code
 # chunk.
@@ -17,6 +21,7 @@ Exploratory Data Analysis by Laura Uzcategui
 library(ggplot2)
 library(dplyr)
 library(GGally)
+library(Hmisc)
 ```
 
 ```{r echo=FALSE, Load_the_Data}
@@ -52,7 +57,8 @@ big is the dataset.
 dim(wine)
 ```
 
-Now, lets dig a bit deeper and see the structure of the dataset by using str method
+Now, lets dig a bit deeper and see the structure of the dataset by using str \
+method
 
 ```{r echo=FALSE}
 str(wine)
@@ -88,7 +94,7 @@ summary(wine$alcohol)
 Let's set some limits to the data that we are observing 
 ```{r echo=FALSE}
 ggplot(aes(x=alcohol), data=subset(wine, !is.na(alcohol))) +
-  geom_histogram(color = 'black', fill='#d6e8d5', bins = 30, binwidth = 0.1) + 
+  geom_histogram(color = 'black', fill='#d6e8d5', binwidth = 0.1) + 
   coord_cartesian(xlim=c(8.00,14.20),ylim=c(0,250)) 
 ```
 
@@ -113,6 +119,46 @@ ggplot(aes(x=volatile.acidity), data=wine ) +
   coord_cartesian(xlim=c(0.0800,1.1000),ylim=c(0,800)) 
 ```
 
+**Initial Observation**
+- Now the data seems to be more uniform and even show a pattern
+
+We know from a fact that residual sugar might have influence in the levels of 
+alcohol, so let's check this variable too
+```{r echo=FALSE}
+ggplot(aes(x=residual.sugar), data=wine ) +
+  geom_histogram(color = 'black', binwidth = 5) 
+```
+
+It seems we need to adjust a bit of bidwith and the limits of both axis
+```{r echo=FALSE}
+summary(wine$residual.sugar)
+```
+
+With the maximum and minimum values,lets limit the axis and plot it
+```{r echo=FALSE}
+ggplot(aes(x=residual.sugar), data=subset(wine, !is.na(residual.sugar))) +
+  geom_histogram(color = 'black', binwidth = 0.05) +
+  coord_cartesian(xlim=c(0.6,70),ylim=c(0,350)) + 
+  scale_x_log10()
+  
+```
+
+Now, let's check the total sulfure dioxide
+```{r echo=FALSE}
+ggplot(aes(x=total.sulfur.dioxide), data=wine ) +
+  geom_histogram(color = 'black', fill='#253647', bins = 20) 
+```
+
+```{r echo=FALSE}
+summary(wine$total.sulfur.dioxide)
+```
+
+```{r echo=FALSE}
+ggplot(aes(x=total.sulfur.dioxide), data=subset(wine, !is.na(total.sulfur.dioxide))) +
+  geom_histogram(color = 'black', fill='#253647', binwidth = 5) +
+  coord_cartesian(xlim=c(9,440.0),ylim=c(0,280))
+  
+```
 
 > **Tip**: Make sure that you leave a blank line between the start / end of
 each code block and the end / start of your Markdown text so that it is
@@ -149,20 +195,175 @@ Did you perform any operations on the data to tidy, adjust, or change the form \
 of the data? If so, why did you do this?
 - I did apply some adjustments of the bins and binwidht on the data, specifically
 for the alcohol and volatic.acidity of the wine, since I wanted to check how the 
-data was spread out in the distribution.
+data was spread out in the distribution and noticed difference that makes to 
+adjust limits between axis and make the scale different. 
 
 
 # Bivariate Plots Section
 
-> **Tip**: Based on what you saw in the univariate plots, what relationships
-between variables might be interesting to look at in this section? Don't limit
-yourself to relationships between a main output feature and one of the
-supporting variables. Try to look at relationships between supporting variables
-as well.
+On this section we will explore relationships between two variables, initially
+we will start to explore the table of correlation coeficients, then we will 
+continue to explore the the main features selected to then explore also the \ 
+relationship between those variables that were not selected as main features.
 
-```{r echo=FALSE, Bivariate_Plots}
+```{r echo=FALSE }
+cr <- rcorr(as.matrix(wine))
+cr$r
+```
+
+**Initial Observations** 
+ 
+ It seems pretty clear that some of the asumptions about relationships between / 
+ variables selected as main ( residual.sugar, alcohol, volatic.acidity and 
+ total.sulfur.dioxide) might been well chosen as its coefficients show certain 
+ correlation. 
+ 
+ Such as: 
+ 
+ - Alcohol - Residual.Sugar --> -0.4506
+ - total.sulfur.dioxide - Residual.Sugar --> 0.401
+ - Alcohol - total.sulfur.dioxide --> -0.448
+ 
+ Also, it has been observed that there is a tendency on strong correlation on 
+ other variables that were not picked up and interestingly enough came out in 
+ the table with correlation. Lets add them to our list for exploration
+ 
+ - Density - residual.sugar --> 0.838
+ - Density - alcohol --> -0.780
+ - Density - total.sulfur.dioxide --> 0.529
+ 
+  Correlation between main features vs. Dependent variable ( Quality )
+ 
+ - Volatic.Acidity - Quality --> -0.19
+ - Alcohol - Quality --> 0.435
+ 
+ As we can see above, density seems an interesting strong correlated variable
+ with many of the main features already selected, therefore we will include it 
+ into the analysis.
+ 
+ With this information we can proceed further in our investigation on how 
+ this physio-chemical components might affect or not the quality of the wine 
+ and also the components itself might react.
+
+Let's start by plotting first the correlations between Alcohol and Residual 
+Sugar 
+
+```{r echo=FALSE }
+ggplot(aes(x=alcohol, y=residual.sugar), data = wine) + 
+  geom_point(alpha=1/4, color='blue', fill='blue') + 
+  xlim(8,15) 
+summary(wine$alcohol)
+```
+
+It seems that as the alcohol level increases the residual sugar after \
+fermentation rarely goes above 20 grams/liter, and also within the 
+scatter plot looks a bit of decrease as the alcohol level goes up.
+
+Let's see if by applying geosmooth function we are right in our asumption
+
+```{r echo=FALSE }
+ggplot(aes(x=alcohol, y=residual.sugar), data = wine) + 
+ geom_line(position=position_jitter(h=0)) + geom_smooth()
+```
+
+Something seems still a bit off, lets try to do a bit more work by applying 
+a transformation on the y variable, alcohol is being expressed in % meanwhile 
+sugar is being expressed as grames per liter 
+
+
+```{r echo=FALSE }
+ggplot(aes(x=alcohol, y=(residual.sugar/1000)*100), data = wine) + 
+  geom_line(position=position_jitter(h=0),stat='summary', fun.y=mean) + 
+  geom_smooth()
+```
+
+Here we can observe a more clear pattern on how the levels of sugar seems to 
+decrease as the level of alcohol increase, starting with around 1.5% level and 
+progressively and slowly decreasing until 0.5% and less.
+
+Lets proceed further with the analysis for: total.sulfur.dioxide and 
+Residual.Sugar
+
+```{r echo=FALSE }
+ggplot(aes(x=residual.sugar ,y=total.sulfur.dioxide), data = wine) + 
+  geom_point(alpha=1/2, color='#96b585', fill='#96b585') +
+  xlim(0.6,66) + 
+  ylim(9,440)
+summary(wine$residual.sugar)
+summary(wine$total.sulfur.dioxide)
+```
+
+Even though there might be a strong correlation, it's still not clear based on 
+the plot, so let us check how the scales are represented for both axis by 
+reviewing the facts.
+
+- We know already residual sugar is grams/per liter. 
+- In the other hand, total.sulfur.dioxide is described as the amount of free 
+and bounds forms of SO2, which is represented usually in ppm ( Part per million)
+
+Therefore we might want to transform it to a common scale which will be 
+ppm to grames/perliter 
+
+```{r echo=FALSE }
+ggplot(aes(x=residual.sugar ,y=(total.sulfur.dioxide/1000)), data = wine) + 
+  geom_point(alpha=1/3, color='#96b585', fill='#96b585') +
+  xlim(0.6,30)
+```
+
+Our data is better spread out now that we have adjusted the scales. 
+Nevertheless there seems to be a strong positive correlation between both variables
+I would be interested to see if we can get a bit more information by plotting 
+with conditional means
+
+```{r echo=FALSE}
+wine$tt.sulfur.grm.liter <- wine$total.sulfur.dioxide / 1000
+
+wine.sugar_dioxide <- wine %>% 
+  group_by(residual.sugar) %>% 
+  summarise(total_mean=mean(tt.sulfur.grm.liter),
+          total_median=median(tt.sulfur.grm.liter),
+          n=n()) %>% 
+  arrange(residual.sugar)
 
 ```
+
+```{r echo=FALSE}
+ggplot(aes(x=residual.sugar, y=total_mean), data=wine.sugar_dioxide) +
+  geom_line(position=position_jitter(h=0)) +
+  xlim(0.6,30) + geom_smooth(method='lm')
+```
+
+In order to do this plot, a new feature has been added, so next plots will be
+easily computed. The new feature is above ppm being transformed to grams/liter 
+
+Now lets proceed to explore our main features with other features that it might 
+be interesting from what we found in the correlations
+
+ - Density - residual.sugar --> 0.838
+ - Density - alcohol --> -0.780
+ - Density - total.sulfur.dioxide --> 0.529
+
+```{r echo=FALSE }
+ggplot(aes(x=residual.sugar, y=density), data = wine) + 
+  geom_point(alpha=1/4) +
+  xlim(0.6, 65.8) 
+summary(wine$residual.sugar)
+```
+
+```{r echo=FALSE }
+ggplot(aes(x=alcohol, y=density), data = wine) + 
+  geom_point(alpha=1/4) + 
+  xlim(8,15) 
+summary(wine$alcohol)
+```
+
+```{r echo=FALSE }
+ggplot(aes(x=total.sulfur.dioxide, y=density), data = wine) + 
+  geom_point(alpha=1/4) +
+  xlim(9, 440.0) 
+summary(wine$total.sulfur.dioxide)
+```
+
 
 # Bivariate Analysis
 
@@ -173,11 +374,19 @@ here. Use the questions below to guide your discussion.
 investigation. How did the feature(s) of interest vary with other features in \
 the dataset?
 
+I have noticed certain correlations between the main features and the 
+the other features that hasn't been picked, such  as density. It appears 
+main features such as residual sugar, alcohol and total sulfur dioxide might
+affect the density of the wine. 
+
 ### Did you observe any interesting relationships between the other features \
 (not the main feature(s) of interest)?
 
 ### What was the strongest relationship you found?
-
+The strongest relationship that has been found is a positive strong relation 
+between Residual Sugar and Density with a coefficient of 0.83 and the 
+representation of the plots, it is prudent to say that is the strongest relationship 
+found along features.
 
 # Multivariate Plots Section
 

@@ -21,3 +21,6 @@ RUN R -e "install.packages('dplyr', repos = 'http://cran.us.r-project.org')"
 
 # Install alr3 
 RUN R -e "install.packages('alr3', repos = 'http://cran.us.r-project.org', dependencies=TRUE)"
+
+# Install GGally 
+RUN R -e "install.packages('GGally', repos = 'http://cran.us.r-project.org', dependencies=TRUE)"
