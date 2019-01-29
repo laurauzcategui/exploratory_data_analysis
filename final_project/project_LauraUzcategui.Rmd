@@ -65,9 +65,10 @@ str(wine)
 ```
 
 **Initial Observation**
- - Data is nott only numerical but integer too.
+ - Data is not only numerical but integer too.
 
 Last but not least, let's take a look to the Summary of the dataset
+
 ```{r echo=FALSE}
 summary(wine)
 ```
@@ -92,6 +93,7 @@ summary(wine$alcohol)
 ```
 
 Let's set some limits to the data that we are observing 
+
 ```{r echo=FALSE}
 ggplot(aes(x=alcohol), data=subset(wine, !is.na(alcohol))) +
   geom_histogram(color = 'black', fill='#d6e8d5', binwidth = 0.1) + 
@@ -103,6 +105,7 @@ ggplot(aes(x=alcohol), data=subset(wine, !is.na(alcohol))) +
 
 Let's keep exploring other variables, such as volatic acidity 
 which is the amount of acetic acide and might influence taste
+
 ```{r echo=FALSE}
 ggplot(aes(x=volatile.acidity), data=wine ) +
   geom_histogram(color = 'black', fill='#ffecc9', binwidth = 0.05)
@@ -110,6 +113,7 @@ ggplot(aes(x=volatile.acidity), data=wine ) +
 
 Same as before, checking the summary will give a better idea on limits 
 for the x axis
+
 ```{r echo=FALSE}
 summary(wine$volatile.acidity)
 ```
@@ -124,26 +128,30 @@ ggplot(aes(x=volatile.acidity), data=wine ) +
 
 We know from a fact that residual sugar might have influence in the levels of 
 alcohol, so let's check this variable too
+
 ```{r echo=FALSE}
 ggplot(aes(x=residual.sugar), data=wine ) +
   geom_histogram(color = 'black', binwidth = 5) 
 ```
 
 It seems we need to adjust a bit of bidwith and the limits of both axis
+
 ```{r echo=FALSE}
 summary(wine$residual.sugar)
 ```
 
 With the maximum and minimum values,lets limit the axis and plot it
+
 ```{r echo=FALSE}
 ggplot(aes(x=residual.sugar), data=subset(wine, !is.na(residual.sugar))) +
   geom_histogram(color = 'black', binwidth = 0.05) +
-  coord_cartesian(xlim=c(0.6,70),ylim=c(0,350)) + 
+  coord_cartesian(xlim=c(0.6,35),ylim=c(0,350)) + 
   scale_x_log10()
   
 ```
 
 Now, let's check the total sulfure dioxide
+
 ```{r echo=FALSE}
 ggplot(aes(x=total.sulfur.dioxide), data=wine ) +
   geom_histogram(color = 'black', fill='#253647', bins = 20) 
@@ -160,17 +168,7 @@ ggplot(aes(x=total.sulfur.dioxide), data=subset(wine, !is.na(total.sulfur.dioxid
   
 ```
 
-> **Tip**: Make sure that you leave a blank line between the start / end of
-each code block and the end / start of your Markdown text so that it is
-formatted nicely in the knitted text. Note as well that text on consecutive
-lines is treated as a single space. Make sure you have a blank line between
-your paragraphs so that they too are formatted for easy readability.
-
 # Univariate Analysis
-
-> **Tip**: Now that you've completed your univariate explorations, it's time to
-reflect on and summarize what you've found. Use the questions below to help you
-gather your observations and add your own if you have other thoughts!
 
 ### What is the structure of your dataset?
 The structure of the dataset is  composed of4898 observations (rows) and 13
@@ -466,7 +464,7 @@ summary(wine$alcohol)
 
 Something is not clear to me with this scatterplot, let's appy some changes 
 to improve our charts :) first, we need to transform quality to a factor then we 
-can produce boxplot we get a better picture of alcohol vs. quality 
+can produce boxplot we get a better picture of alcohol vs. quality.
 
 ```{r}
 wine$quality <- factor(wine$quality, ordered = T)
@@ -489,9 +487,6 @@ There is some interesting finding on thix plot, for example:
  9 and it falls within the maximum percentage levels of alcohol 
 
 # Bivariate Analysis
-
-> **Tip**: As before, summarize what you found in your bivariate explorations
-here. Use the questions below to guide your discussion.
 
 ### Talk about some of the relationships you observed in this part of the \
 investigation. How did the feature(s) of interest vary with other features in \
@@ -518,16 +513,62 @@ found along features.
 
 # Multivariate Plots Section
 
-> **Tip**: Now it's time to put everything together. Based on what you found in
-the bivariate plots section, create a few multivariate plots to investigate
-more complex interactions between variables. Make sure that the plots that you
-create here are justified by the plots you explored in the previous section. If
-you plan on creating any mathematical models, this is the section where you
-will do that.
+Before starting our multivariate analysis there is 2 actions that are needed in 
+order to proceed forward and have really meaningful information. 
 
-```{r echo=FALSE, Multivariate_Plots}
+First, before starting, let's do a scatterplot matrix 
 
+```{r}
+theme_set(theme_minimal(20))
+
+set.seed(1836)
+wine_subset <- wine[,c(2:13)]
+names(wine_subset)
+ggpairs(wine_subset[sample.int(nrow(wine_subset),1000), ])
 ```
+
+
+*Observation* 
+After running the scatter plot matrix, it is settled the variables we will 
+work with are the ones selected as main features, additionally we will add to
+the analysis the following variables too: density, quality and ranking. 
+
+First, let's try to plot residual alcohol and residual sugar along with quality
+where quality is greater than 7, as for now we want to evaluate the wines 
+that were ranked with High Quality 
+
+```{r}
+ggplot(aes(x=alcohol, y=residual.sugar), data=subset(wine, wine$quality>7)) +
+  geom_line(aes(color=quality), stat='summary', fun.y = median)
+```
+
+Now lets check one of the strongest correlations which is between residual sugar
+and density 
+
+```{r}
+ggplot(aes(x=residual.sugar, y=density),
+       data = subset(wine, quality >= 7 & !is.na(residual.sugar))) + 
+       geom_line(aes(color=quality), stat='summary', fun.y=mean) +
+       geom_line( linetype=3, stat='summary', fun.y=mean) + scale_x_log10()
+```
+
+Even thought that the patter is not straight forward we can see that even for 
+high quality wines, as the residual.sugar is increasing the density is affected 
+by it, for the 3 most high quality wines the pattern seems to be the same 
+except for the best ( scored as 9 ) which seems to be more linear and less noisy
+
+Now, lets check the other strongest correlation which is between density and 
+alcohol. 
+
+```{r}
+ggplot(aes(x=alcohol, y=density),
+       data = subset(wine, quality >= 7)) + 
+       geom_line(aes(color=quality), stat='summary', fun.y=mean) +
+       geom_line( linetype=3, stat='summary', fun.y=mean)
+```
+
+This strong negative relationship is particularly a good focus of attention for
+further analysis in other projects if possibles
 
 # Multivariate Analysis
 
@@ -535,7 +576,25 @@ will do that.
 investigation. Were there features that strengthened each other in terms of \
 looking at your feature(s) of interest?
 
+This section was really interesting in terms of relationships between main 
+features, such as alcohol and residual sugar and how it might impact 
+explicitly or not the quality of the wine. 
+
+
 ### Were there any interesting or surprising interactions between features?
+
+Yes, there is a particular interaction that I would probably investigate further
+in next iteration of the project. 
+
+We know by facts, that there is strong correlation between residual sugar and 
+density also, between alcohol and density. 
+
+As we have read previously over the previous sections density has higher chances
+of variability when influenced by % of alcohol and residual sugars, then If 
+we look at the multivariate analysis we could see how this 3 variables are 
+strongly correlated and it will be subject of study to add/remove some of them 
+from the prediction models (when done) to see how it performs the regression and 
+its accuracy. 
 
 ### OPTIONAL: Did you create any models with your dataset? Discuss the \
 strengths and limitations of your model.
@@ -544,45 +603,103 @@ strengths and limitations of your model.
 
 # Final Plots and Summary
 
-> **Tip**: You've done a lot of exploration and have built up an understanding
-of the structure of and relationships between the variables in your dataset.
-Here, you will select three plots from all of your previous exploration to
-present here as a summary of some of your most interesting findings. Make sure
-that you have refined your selected plots for good titling, axis labels (with
-units), and good aesthetic choices (e.g. color, transparency). After each plot,
-make sure you justify why you chose each plot by describing what it shows.
-
 ### Plot One
 ```{r echo=FALSE, Plot_One}
-
+ggplot(aes(x=alcohol, y=(residual.sugar/1000)*100), data = wine) + 
+  geom_line(position=position_jitter(h=0),stat='summary', fun.y=mean, color='blue') + 
+  geom_smooth(color='#6b7077') + 
+  xlab("Alcohol (%)") + 
+  ylab("Residual Sugar (%)") + 
+  ggtitle("% Levels of Alcohol vs. Residual Sugar ")  + 
+  theme(plot.title = element_text(size = 12, hjust=0.5),
+             axis.text=element_text(size = 10),
+             axis.title = element_text(size=10))
 ```
 
 ### Description One
-
+The reason for choosing this plot initially is as a social drinker I was curious
+to see how the percentage level of alcohol present in alcoholic drinks, in this 
+case wine influence the taste of drink, specially as sweetner ( sugar levels ). 
+This was the starting point of the analysis, by observing as the % of alcohol 
+levels increase the residual sugars decrease, which might be product also of the 
+fermentation levels and times. It would be pretty interesting to collect more
+data points on features such as fermentation levels, and time to ferment. 
 
 ### Plot Two
 ```{r echo=FALSE, Plot_Two}
-
+ggplot(aes(x=residual.sugar ,y=density), data = wine) + 
+  geom_point(alpha=1/4, color='#6b4c72', fill='#6b4c72') +
+  xlim(0.6, quantile(wine$residual.sugar , p=0.95)) +
+  ylim(0.9871, quantile(wine$density, p=0.95)) +
+  geom_smooth(method = 'lm', color = '#272963') + 
+  xlab("Residual Sugar (g/dm3) ") + 
+  ylab(" Density (g/cm3) ") + 
+  ggtitle("Density vs. Residual Sugar correlation") + 
+  theme(plot.title = element_text(size = 12, hjust=0.5),
+             axis.text=element_text(size = 10),
+             axis.title = element_text(size=10))
 ```
 
 ### Description Two
+In order to follow the exploration and research on the dataset, the next plot 
+I decided to focus on was the correlation between residual sugar and density.
 
+The reason for it is well known that density is a measurement of mass, 
+weight or per volume of a material and it's mainly determined by other
+components such as alcohol levels, residual sugar, glycerol 
+among others [[1]](https://www.etslabs.com/analyses/DEN)
+
+As a matter of facts, we can see on the plot above the strong positive correlation
+between Residual sugar and Density, which confirms once again the dependency of
+density with other variables present in the dataset.
 
 ### Plot Three
 ```{r echo=FALSE, Plot_Three}
+# defining a better palette for this plot
+cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
+ggplot(aes(x=alcohol, y=density),
+       data = subset(wine, quality >= 7)) + 
+       geom_line(aes(color=quality), stat='summary', fun.y=mean) +
+       geom_line( linetype=3, stat='summary', fun.y=mean, color='#E69F00') + 
+       xlab('Alcohol (%)') + 
+       ylab('Density (g/cm3)') + 
+       ggtitle('Multivariate Analysis Alcohol vs. Density by Quality', subtitle = 'Quality above 7') + 
+       theme(plot.title = element_text(size = 12, hjust = 0.5),
+             plot.subtitle = element_text(size= 9, hjust=0.5),
+             axis.text=element_text(size = 10),
+             axis.title = element_text(size=10),
+             legend.text = element_text(size=10),
+             legend.title = element_text(size=10)) + scale_colour_manual(values=cbPalette)
 ```
 
+
 ### Description Three
+Last but not least, I wanted to explore the relationship between one of the main
+features that was picked from the beggining and another feature that wasn't 
+considered initially, along with the Quality that is the dependent variable. 
+
+It was pretty surprising to see how for the 3 highest ranked/scored quality 
+wines the increase on percentage of alcohol might be an important factor that 
+will influence the density on the wine. Although there were not exploration 
+on the density against the quality, it will be worth exploring this on next steps
+or iterations of the project. 
 
 ------
 
 # Reflection
 
-> **Tip**: Here's the final step! Reflect on the exploration you performed and
-the insights you found. What were some of the struggles that you went through?
-What went well? What was surprising? Make sure you include an insight into
-future work that could be done with the dataset.
+The exploratory data analysis project on the white wine dataset and the whole 
+subject was a pretty overwhelming and exciting journey. On this particular case
+the exploration was initially based on certain bias that I wanted to cover in 
+relation how influyent is the sugar in drinks with alcohol and thanks to it I'm 
+more aware now how multiple physio chemical conditions are important on the 
+process of wine making and how it could potentially affect the quality itself. 
 
-> **Tip**: Don't forget to remove this, and the other **Tip** sections before
-saving your final work and knitting the final report!
+To me was surprising to know that the more % of alcohol on the wine, there is a 
+change the levels of sugar are less and less, an hypothesis for this might be 
+to investigate how fermentation plays a role on this relationship. 
+
+One of the struggles I had to go over was investigating the scale and meaning of 
+the units for the features and apply somehow scaling of the features
+as well as trying to make the visualisations more friendly. 
