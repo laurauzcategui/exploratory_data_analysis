@@ -350,12 +350,66 @@ ggplot(aes(x=residual.sugar, y=density), data = wine) +
 summary(wine$residual.sugar)
 ```
 
+From the plot above we could infere there is a relation between the residual 
+sugar and density. 
+
+From its definition: the density of water is close to that of water depending on
+the percent alcohol and sugar content
+
+Confirming that density depends on this 2 other variables, Let's get a deeper 
+understanding by checking its summary first.
+
+```{r}
+summary(wine$residual.sugar)
+```
+
+```{r}
+summary(wine$density)
+```
+
+And plot it with better limits to see how is spread out. 
+
+```{r}
+ggplot(aes(x=residual.sugar ,y=density), data = wine) + 
+  geom_point(alpha=1/4, color='#6b4c72', fill='#6b4c72') +
+  xlim(0.6, quantile(wine$residual.sugar , p=0.95)) +
+  ylim(0.9871, quantile(wine$density, p=0.95)) +
+  geom_smooth(method = 'lm', color = '#272963')
+```
+
+On this plot, the distribution of the data clearly show us a pattern of the
+strong positive correlation between both variables.
+
+It is important to notice if applying a linear regression for modeling and 
+predicting data such as Quality of the wine, I would probably be leaving 
+out variables with such an strong correlation as it might affect the 
+prediction.
+
+Now that we have some insights on how dependant density might be of alcohol 
+let's apply the same exploration on this 2 variables 
+
 ```{r echo=FALSE }
 ggplot(aes(x=alcohol, y=density), data = wine) + 
   geom_point(alpha=1/4) + 
   xlim(8,15) 
-summary(wine$alcohol)
 ```
+
+We could observe, it seems there is a negative correlation between both 
+variables. Let's apply again some quantiles and smooth to the graph 
+
+```{r}
+ggplot(aes(x=alcohol ,y=density), data = wine) + 
+  geom_point(alpha=1/4, color='#ea3c6b', fill='#ea3c6b') +
+  xlim(8, quantile(wine$alcohol , p=0.95)) +
+  ylim(0.9871, quantile(wine$density, p=0.95)) +
+  geom_smooth(method = 'lm', color = '#7a6f72')
+```
+
+It is quite evident that alcohol plays an important role on being stronly and
+negative correlated to the level of density. 
+
+Last but not least on this exploration of this 3 main features against not 
+main features variables let's check total.sulfur.dioxide with density
 
 ```{r echo=FALSE }
 ggplot(aes(x=total.sulfur.dioxide, y=density), data = wine) + 
@@ -364,6 +418,75 @@ ggplot(aes(x=total.sulfur.dioxide, y=density), data = wine) +
 summary(wine$total.sulfur.dioxide)
 ```
 
+Same as before let's focus where our data is highly concentrated and apply
+quantiles along with smooth to the plot. 
+
+```{r}
+ggplot(aes(x=total.sulfur.dioxide ,y=density), data = wine) + 
+  geom_point(alpha=1/4, color='#1aafa8', fill='#1aafa8') +
+  xlim(9, quantile(wine$total.sulfur.dioxide , p=0.95)) +
+  ylim(0.9871, quantile(wine$density, p=0.95)) +
+  geom_smooth(method = 'lm', color = '#7a6f72')
+```
+
+Our scale is different as the scales for both variables are different, 
+lets do a transformation and plot it again to see how it vary 
+
+   - total sulfur dioxide (mg / dm^3)
+   - density (g / cm^3) --> le'ts transform to mg / dm^3 by multiplying by 1000
+   
+```{r}
+wine$density_in_mg <- wine$density * 1000
+
+summary(wine$density_in_mg)
+
+```  
+
+```{r}
+ggplot(aes(x=total.sulfur.dioxide ,y=density_in_mg), data = wine) + 
+  geom_point(alpha=1/4, color='#1aafa8', fill='#1aafa8') +
+  xlim(9, quantile(wine$total.sulfur.dioxide , p=0.95)) +
+  ylim(987.1, quantile(wine$density_in_mg, p=0.95)) +
+  geom_smooth(method = 'lm', color = '#7a6f72')
+```
+
+After transformating the density variable to mg, it's being observed that 
+distribution of relationship between the two variables remain the same. 
+
+We are also interested to evaluate how alcohol might be related to the 
+perception and quality of the wine, knowing that quality 
+was scored in the dataset from 0 to 10 
+
+```{r echo=FALSE }
+ggplot(aes(x=alcohol, y=quality), data = wine) + 
+  geom_point(alpha=1/4) + 
+  xlim(8,14.2)
+summary(wine$alcohol)
+```
+
+Something is not clear to me with this scatterplot, let's appy some changes 
+to improve our charts :) first, we need to transform quality to a factor then we 
+can produce boxplot we get a better picture of alcohol vs. quality 
+
+```{r}
+wine$quality <- factor(wine$quality, ordered = T)
+```
+
+
+```{r}
+ggplot(aes(x=quality, y=alcohol), data=wine) + 
+  geom_boxplot() + 
+  geom_smooth(method='lm')
+```
+
+There is some interesting finding on thix plot, for example: 
+
+- There is some outliers when quality was score at a 5 
+- On having a quality 3, more the majority of data falls in 25% to 50% with a 
+  9 to 10~ % in alcohol. 
+- The distribution of data was fairly equal for data scored a 6 or a 7 in quality 
+- Anothe intesting finding is how only an small set of the data was score with a 
+ 9 and it falls within the maximum percentage levels of alcohol 
 
 # Bivariate Analysis
 
@@ -381,6 +504,11 @@ affect the density of the wine.
 
 ### Did you observe any interesting relationships between the other features \
 (not the main feature(s) of interest)?
+
+Yes, definitely there is some interesting relationships, for example 
+the quality of the wine and the levels of alcohol, which makes me think 
+if actually people sentiment about alcohol is: the more percentage of alcohol 
+the wine have the more higher is being scored the quality of the wine.
 
 ### What was the strongest relationship you found?
 The strongest relationship that has been found is a positive strong relation 
