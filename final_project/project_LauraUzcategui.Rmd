@@ -123,6 +123,27 @@ ggplot(aes(x=volatile.acidity), data=wine ) +
   coord_cartesian(xlim=c(0.0800,1.1000),ylim=c(0,800)) 
 ```
 
+It seems the data is a bit skewed to the right, let's plot it to see if there 
+is any outiers
+
+```{r}
+ggplot(aes(x = "", y = volatile.acidity),data = wine) + 
+  geom_boxplot() +
+  coord_cartesian(ylim = c(0.0800,1.100)) 
+```
+
+**Observation**:
+- With the boxplot in place we clearly can see there is outliers that lie down 
+outside the quantiles, specifically the third quartile. 
+
+For that we can limit again our previous plot :) 
+
+```{r echo=FALSE}
+ggplot(aes(x=volatile.acidity), data=wine ) +
+  geom_histogram(color = 'black', fill='#ffecc9', binwidth = 0.03) +
+  coord_cartesian(xlim=c(0.0800,0.6),ylim=c(0,800))
+```
+
 **Initial Observation**
 - Now the data seems to be more uniform and even show a pattern
 
@@ -168,6 +189,64 @@ ggplot(aes(x=total.sulfur.dioxide), data=subset(wine, !is.na(total.sulfur.dioxid
   
 ```
 
+Now lets explore 2 more features, one of them is quality which is our output 
+variable or independent variable. 
+
+```{r echo=FALSE}
+ggplot(aes(x=quality), data=wine ) +
+  geom_bar(color = 'black', fill='#253647') 
+```
+
+
+```{r echo=FALSE}
+# Let's plot the histogram with each bar colored with Quality as a factor
+# with a different dataframe so still can play around with the original dataset
+# in the next observations
+
+wine.q.factor <- wine
+wine.q.factor$quality <- factor(wine.q.factor$quality, ordered = T)
+
+ggplot(aes(x=quality), data=wine.q.factor ) +
+  geom_bar(aes(fill = factor(quality)))
+```
+
+**Observation** 
+
+- It's interesting to see how 95% of the data is heavily concentrated on the 
+observations with quality between 5 and 7. 
+
+Also, let's plot Density as one of the no main features selected, but after 
+reflecting in previous iterations considered is important to give context
+to the main user who might be checking the project. 
+
+```{r echo=FALSE}
+ggplot(aes(x=density), data=wine ) +
+  geom_bar(color = 'black', fill='#253647') 
+```
+
+Lets check the summary of density, so we can limit the axis and have a better 
+view of the data 
+
+```{r}
+summary(wine$density)
+```
+
+```{r echo=FALSE}
+# As we have many observations with low values for the density 
+# we need to adjust the binwidth so we have a better overview of the 
+# distribution
+
+ggplot(aes(x=density), data=subset(wine, !is.na(total.sulfur.dioxide))) +
+  geom_histogram(color = 'black', fill='#253647', binwidth = 0.0005) +
+  coord_cartesian(xlim=c(0.9871,1.001),ylim=c(0,350)) + 
+  scale_x_continuous(breaks=seq(0.98721,1.001,0.0025))
+  
+```
+
+**Observation**
+- We can see that density is heavily concentrated and also between each value of
+x axis as we have scale continuosly we can observe the values are pretty minimal
+
 # Univariate Analysis
 
 ### What is the structure of your dataset?
@@ -195,6 +274,10 @@ of the data? If so, why did you do this?
 for the alcohol and volatic.acidity of the wine, since I wanted to check how the 
 data was spread out in the distribution and noticed difference that makes to 
 adjust limits between axis and make the scale different. 
+- Yes, when plotting the quality as an histogram, one interesting finding was
+the fact that 95% of the data lies down around 5 to 7 scores in quality, which 
+makes me wonder if the data is not representative of the whole population or 
+if the sampling was somehow bias :) 
 
 
 # Bivariate Plots Section
@@ -434,6 +517,12 @@ lets do a transformation and plot it again to see how it vary
    - density (g / cm^3) --> le'ts transform to mg / dm^3 by multiplying by 1000
    
 ```{r}
+# Lets transform the density from g/cm3 to mg/dm3 so we can have the same 
+# units as total.sulfur.dioxide. 
+
+# The new variable is being called: density_in_mg and it's the representation 
+# of the density divided by 1000 
+
 wine$density_in_mg <- wine$density * 1000
 
 summary(wine$density_in_mg)
@@ -467,6 +556,7 @@ to improve our charts :) first, we need to transform quality to a factor then we
 can produce boxplot we get a better picture of alcohol vs. quality.
 
 ```{r}
+# Lets represent quality as a factor which is ordered
 wine$quality <- factor(wine$quality, ordered = T)
 ```
 
@@ -518,13 +608,26 @@ order to proceed forward and have really meaningful information.
 
 First, before starting, let's do a scatterplot matrix 
 
-```{r}
+```{r fig.height = 6, fig.width = 10}
 theme_set(theme_minimal(20))
 
+# Let's create a vector to exclude newly created variables and 
+# the observation number
+names_to_exclude <- c('X', 'tt.sulfur.grm.liter', 'density_in_mg','quality')
+
 set.seed(1836)
-wine_subset <- wine[,c(2:13)]
+# Now let's create the subset with all variables except 
+# the ones present in names_to_exclude so we can create the matrix
+wine_subset <- wine[ , !names(wine) %in% names_to_exclude]
+
 names(wine_subset)
-ggpairs(wine_subset[sample.int(nrow(wine_subset),1000), ])
+ggpairs(wine_subset[sample.int(nrow(wine_subset),1000), ]) + 
+  theme(axis.text.x = element_text(size=7),
+        axis.text.y = element_text(size=7),
+        axis.ticks = element_blank(), 
+        legend.text = element_text(size=7),
+        strip.text = element_text(size=7),
+        strip.text.y  = element_text(size=7, angle=0))
 ```
 
 
@@ -539,7 +642,8 @@ that were ranked with High Quality
 
 ```{r}
 ggplot(aes(x=alcohol, y=residual.sugar), data=subset(wine, wine$quality>7)) +
-  geom_line(aes(color=quality), stat='summary', fun.y = median)
+  geom_point(aes(color=quality), stat='summary', fun.y = mean) + 
+  geom_smooth(alpha=1/4, color='gray')
 ```
 
 Now lets check one of the strongest correlations which is between residual sugar
@@ -563,8 +667,8 @@ alcohol.
 ```{r}
 ggplot(aes(x=alcohol, y=density),
        data = subset(wine, quality >= 7)) + 
-       geom_line(aes(color=quality), stat='summary', fun.y=mean) +
-       geom_line( linetype=3, stat='summary', fun.y=mean)
+   geom_point(aes(color=quality), stat='summary', fun.y = mean) + 
+  geom_smooth(alpha=1/4, color='gray')
 ```
 
 This strong negative relationship is particularly a good focus of attention for
@@ -605,6 +709,13 @@ strengths and limitations of your model.
 
 ### Plot One
 ```{r echo=FALSE, Plot_One}
+# The idea of this plot is to express the % levels of alcohol vs residual.sugar 
+# but residual.sugar is represented in g/dm3 so for that the actions are: 
+# - Divided by 1000 to pass it to mg and multiply by 100 to obtain percentage
+# value
+# - We want to plot the mean of the Y variable so the chart
+# - Also we apply geom_smooth to see if the any patters within the plot
+
 ggplot(aes(x=alcohol, y=(residual.sugar/1000)*100), data = wine) + 
   geom_line(position=position_jitter(h=0),stat='summary', fun.y=mean, color='blue') + 
   geom_smooth(color='#6b7077') + 
@@ -613,7 +724,9 @@ ggplot(aes(x=alcohol, y=(residual.sugar/1000)*100), data = wine) +
   ggtitle("% Levels of Alcohol vs. Residual Sugar ")  + 
   theme(plot.title = element_text(size = 12, hjust=0.5),
              axis.text=element_text(size = 10),
-             axis.title = element_text(size=10))
+             axis.title.y = element_text(angle=0,size=10, vjust=0.5),
+             axis.title.x = element_text(size=10)
+        )
 ```
 
 ### Description One
@@ -627,6 +740,15 @@ data points on features such as fermentation levels, and time to ferment.
 
 ### Plot Two
 ```{r echo=FALSE, Plot_Two}
+# On the code below there is a series of actions taken in order 
+# to represent the correlation a bit better, please follow the explanation: 
+# 1. X variable=Residual.Sugar was limited by its mininum value 
+# whih is 0.6 and its 95% quantile so we can get rid of outliers and check where 
+# the concentration of the data is. 
+# 2. Y variable=Density was also limited for the same reason above minimum value
+# and 95% quantile 
+# 3. A geom_smooth was applied with LM method so patters could be detected
+
 ggplot(aes(x=residual.sugar ,y=density), data = wine) + 
   geom_point(alpha=1/4, color='#6b4c72', fill='#6b4c72') +
   xlim(0.6, quantile(wine$residual.sugar , p=0.95)) +
@@ -637,7 +759,8 @@ ggplot(aes(x=residual.sugar ,y=density), data = wine) +
   ggtitle("Density vs. Residual Sugar correlation") + 
   theme(plot.title = element_text(size = 12, hjust=0.5),
              axis.text=element_text(size = 10),
-             axis.title = element_text(size=10))
+             axis.title = element_text(size=10),
+             axis.title.y = element_text(angle=0, vjust=0.5))
 ```
 
 ### Description Two
@@ -660,17 +783,18 @@ cbPalette <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#F0E442", "#0072B2",
 
 ggplot(aes(x=alcohol, y=density),
        data = subset(wine, quality >= 7)) + 
-       geom_line(aes(color=quality), stat='summary', fun.y=mean) +
-       geom_line( linetype=3, stat='summary', fun.y=mean, color='#E69F00') + 
+   geom_point(aes(color=quality), stat='summary', fun.y = mean) + 
+  geom_smooth(alpha=1/4, color='blue') +
        xlab('Alcohol (%)') + 
        ylab('Density (g/cm3)') + 
-       ggtitle('Multivariate Analysis Alcohol vs. Density by Quality', subtitle = 'Quality above 7') + 
+       ggtitle('Multivariate Analysis Alcohol vs. Density by Qualcity', subtitle = 'Quality above 7') + 
        theme(plot.title = element_text(size = 12, hjust = 0.5),
              plot.subtitle = element_text(size= 9, hjust=0.5),
              axis.text=element_text(size = 10),
              axis.title = element_text(size=10),
              legend.text = element_text(size=10),
-             legend.title = element_text(size=10)) + scale_colour_manual(values=cbPalette)
+             legend.title = element_text(size=10), 
+             axis.title.y = element_text(angle=0, vjust=0.5)) + scale_colour_manual(values=cbPalette)
 ```
 
 
